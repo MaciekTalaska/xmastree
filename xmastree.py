@@ -2,13 +2,31 @@ import tornado.ioloop
 import tornado.web
 import tornado.options
 import tornado.autoreload
+import threading
+import time
+import Queue
+
+lightThread = None
+queue = Queue.Queue()
+programs = dict()
+
+class LightThread(threading.Thread):
+    def __init__(self, threadId, name, counter):
+        pass
+    
+    def run(self):
+        pass
 
 class XmasLines(tornado.web.RequestHandler):
     def get(self, line):
+        self.set_header("Content-Type", "application/json")
         self.write("state for line " + str(line) + " requested")
     
     def put(self, line):
+        self.set_header("Content-Type", "application/json")
         self.write("line " +str(line) + " changed")
+        global queue
+        queue.put("a very new item in the queue", block=True)
 
 class XmasStdProgramLister(tornado.web.RequestHandler):
     def get(self):
@@ -40,10 +58,26 @@ application = tornado.web.Application([
     #(r"/program",XmasCustomProgram),
 ])
 
+def InnerThread():
+    while( 1 == 1):    
+        #print("inner thread ;)")
+        if (queue.empty()):
+            time.sleep(5)
+            print("queue is empty")
+        else:
+            print("queue populated!")
+            global queue
+            item = queue.get(block=True)
+            print("current item: " + str(item))
+            time.sleep(5)
+
 if __name__ == "__main__":
     tornado.options.parse_command_line()
     # register main file for changes
     tornado.autoreload.watch("xmastree.py")
     application.listen(8888)
     tornado.autoreload.start(io_loop=None,check_time=500)
+    lightThread = threading.Thread(target = InnerThread)
+    lightThread.start()
     tornado.ioloop.IOLoop.instance().start()
+    lightThread.join();
