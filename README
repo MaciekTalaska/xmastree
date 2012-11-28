@@ -1,8 +1,8 @@
-xmastree: 
-=========
+xmastree 
+========
 
-how to install?
---------------
+How to install?
+---------------
 1. Grab Python interpreter for your machine/OS (stick to Python 2.x)
 2. Install python setuptools (http://pypi.python.org/pypi/setuptools)
 3. Install Tornado Web Server: easy_install tornado
