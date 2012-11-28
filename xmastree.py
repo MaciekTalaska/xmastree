@@ -55,12 +55,11 @@ application = tornado.web.Application([
     (r"/stdprogram",XmasStdProgramLister),
     (r"/stdprogram/([0-9]{1})",XmasStdProgram),
     (r"/program",XmasCustomProgramLister),
-    #(r"/program",XmasCustomProgram),
+    (r"/program/([0-9A-Fa-f-]*)",XmasCustomProgram),
 ])
 
 def InnerThread():
     while( 1 == 1):    
-        #print("inner thread ;)")
         if (queue.empty()):
             time.sleep(5)
             print("queue is empty")
@@ -78,6 +77,7 @@ if __name__ == "__main__":
     application.listen(8888)
     tornado.autoreload.start(io_loop=None,check_time=500)
     lightThread = threading.Thread(target = InnerThread)
-    lightThread.start()
+    # worker thread is temporarily disabled
+    #lightThread.start()
     tornado.ioloop.IOLoop.instance().start()
-    lightThread.join();
+    #lightThread.join();
