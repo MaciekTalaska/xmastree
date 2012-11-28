@@ -7,4 +7,7 @@ How to install?
 2. Install python setuptools (http://pypi.python.org/pypi/setuptools)
 3. Install Tornado Web Server: easy_install tornado
 
- 
+
+How to run?
+-----------
+1. python xmastree.py
