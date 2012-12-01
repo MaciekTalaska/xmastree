@@ -7,19 +7,27 @@ import time
 import Queue
 import uuid
 import json
+from lightcontroller import *
 
 lightThread = None
 queue = Queue.Queue()
 programs = dict()
+stdprograms = dict()
 
-class LightChanger():
-    @staticmethod
-    def turn_all_ligths_off():
+class ProgramLauncher(object):
+    def __init__():
         pass
+    
+    @staticmethod
+    def run(program):
+        pass
+        
 
-    @staticmethod
-    def change_light_state(light):        
-        pass
+class XmasJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Program):
+            return obj.__dict__
+        return json.JSONEncoder().default(obj)
 
 class LightThread(threading.Thread):
     def __init__(self, threadId, name, counter):
@@ -28,7 +36,46 @@ class LightThread(threading.Thread):
     def run(self):
         pass
 
+class Program(object):
+    def __init__(self, author, name, id, content):
+        self.author = author
+        self.name = name
+        self.id = id
+        self.content = content
+    
+    @property
+    def Author(self):
+        return self.author
+    
+    @property
+    def Name(self):
+        return self.name
+        
+    @property
+    def Id(self):
+        return self.id
+        
+    @property
+    def Content(self):
+        return self.content
+        
+    def to_json():
+        json.dumps(self.__dict__)
+        
+    @staticmethod
+    def from_json(json_object):
+        if ('author' in json_object) and ('name' in json_object) and ('content' in json_object):
+            author = json_object['author']
+            name = json_object['name']
+            content = json_object['content']
+            return Program(author, name, id, content)
+
 class JSONHelper():
+    @staticmethod
+    def program_from_json(json_object):
+        if ('program_name' in json_object):
+            pass
+            
     def is_proper_program(self, program):
         pass
     
@@ -36,51 +83,77 @@ class RequestHandlerBase(tornado.web.RequestHandler):
     def set_all_headers(self):
         self.set_header("Content-Type", "application/json")
 
-class XmasLines(RequestHandlerBase):
+class LinesHandler(RequestHandlerBase):
     def put(self, line):
         self.set_all_headers()
-        LightChanger.change_light_state(line)
+        LightController.change_light_state(line)
 
-class XmasStdProgramLister(tornado.web.RequestHandler):
+class StandardProgramHandlerLister(RequestHandlerBase):
     def get(self):
-        self.write("listing all standard programs...")
+        if len(stdprograms) > 0:
+            body = json.dumps(stdprograms.values(), cls=XmasJSONEncoder)
+            self.set_all_headers()
+            self.write(body)
+        else:
+            raise tornado.web.HTTPError(404)
         
-class XmasStdProgram(RequestHandlerBase):    
-    def get(self, program):
-        self.write("standard program " +str(program) + " requested")
+class StandardProgramHandler(RequestHandlerBase):    
+    def put(self, id):
+        program = stdprograms.get(id)
+        if program is None:
+            raise tornado.web.HTTPError(404)
+        else:
+            self.set_all_headers()
+            ProgramLauncher.run()
+            
+    def get(self, id):
+        program = stdprograms.get(id)
+        if program is None:
+            raise tornado.web.HTTPError(404)
+        else:
+            self.set_all_headers()
+            self.write(XmasJSONEncoder().encode(program))
         
-    def put(self):
-        self.write("starting pre-defined program")
-        
-class XmasCustomProgramLister(RequestHandlerBase):
+class CustomProgramListerHandler(RequestHandlerBase):
     def get(self):
-        self.set_all_headers()
-        #self.write(str(programs.items()))
-        l = list()
-        for k in programs.iterkeys():
-            skey = str(k)
-            value = programs[k]
-            l.append(dict(skey, value))
-        output = json.dumps(l)
-        self.write(output)
+        if len(programs) > 0:
+            body = json.dumps(programs.values(), cls=XmasJSONEncoder)
+            self.set_all_headers()
+            self.write(body)
+        else:
+            raise tornado.web.HTTPError(404)
 
     def post(self):
-        id = uuid.uuid1()
-        self.write("{id:"+str(id)+"}")
+        sid = str(uuid.uuid1())
         global programs
-        programs[id]= self.request.body
+        strprogram = self.request.body
+        program = json.loads(strprogram, object_hook=Program.from_json)
+        program.__dict__['id']=sid
+        programs[sid]= program
+        self.write("{id:"+sid+"}")
 
-class XmasCustomProgram(RequestHandlerBase):
+class CustomProgramHandler(RequestHandlerBase):
     def get(self,id):  
-        newid = uuid.UUID(id)
-        self.write(programs[newid])
+        program = programs.get(id)
+        if program is None:
+            raise tornado.web.HTTPError(404)
+        else:
+            self.set_all_headers()
+            self.write(json.dumps(program, cls=XmasJSONEncoder))
+        
+    def put(self, id):
+        program = programs.get[id]
+        if program is None:
+            raise tornado.web.HTTPError(404)
+        else:
+            ProgramLauncher.run(program)
 
 application = tornado.web.Application([
-    (r"/line/([0-7]{1})",XmasLines),
-    (r"/stdprogram",XmasStdProgramLister),
-    (r"/stdprogram/([0-9]{1})",XmasStdProgram),
-    (r"/program",XmasCustomProgramLister),
-    (r"/program/([0-9A-Fa-f-]*)",XmasCustomProgram),
+    (r"/line/([0-7]{1})",LinesHandler),
+    (r"/stdprogram",StandardProgramHandlerLister),
+    (r"/stdprogram/([0-9A-Fa-f-]*)",StandardProgramHandler),
+    (r"/program",CustomProgramListerHandler),
+    (r"/program/([0-9A-Fa-f-]*)",CustomProgramHandler),
 ])
 
 def InnerThread():
@@ -94,8 +167,16 @@ def InnerThread():
             item = queue.get(block=True)
             print("current item: " + str(item))
             time.sleep(5)
+            
+def populate_programs():
+    #print("prepopulating programms...")
+    global stdprograms
+    stdprograms['8c702c94-12c8-4843-adb4-73b4806d1d47'] = Program('Maciek', 'Blinker', '8c702c94-12c8-4843-adb4-73b4806d1d47', 'ala ma kota')
+    stdprograms['cd6934bc-4bd5-4f13-994d-bcc386126f74'] = Program('Maciek', 'Blinker v2', 'cd6934bc-4bd5-4f13-994d-bcc386126f74', 'kot ma ale')
 
 if __name__ == "__main__":
+    # initialize
+    populate_programs()
     tornado.options.parse_command_line()
     # register main file for changes
     tornado.autoreload.watch("xmastree.py")
