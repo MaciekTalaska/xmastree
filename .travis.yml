@@ -3,6 +3,6 @@ python:
   - "2.7"
 # installing dependencies:
 install:
-  - install pip tornado
+  - pip install tornado
 #  - pip install -r requirements.txt --use-mirrors
 script:
