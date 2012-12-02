@@ -2,9 +2,11 @@ import unittest
 import httplib
 import uuid
 import json
+import config
 
 class TestBase(unittest.TestCase):
-    port = 18989
+    #port = 8081
+    port = config.web_server_port
     def create_connection(self):
         return httplib.HTTPConnection("localhost", self.port)
         

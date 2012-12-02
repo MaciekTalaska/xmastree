@@ -8,6 +8,7 @@ import Queue
 import uuid
 import json
 from lightcontroller import *
+import config
 
 lightThread = None
 queue = Queue.Queue()
@@ -180,7 +181,7 @@ if __name__ == "__main__":
     tornado.options.parse_command_line()
     # register main file for changes
     tornado.autoreload.watch("xmastree.py")
-    application.listen(18989)
+    application.listen(config.web_server_port)
     tornado.autoreload.start(io_loop=None,check_time=500)
     lightThread = threading.Thread(target = InnerThread)
     # worker thread is temporarily disabled
