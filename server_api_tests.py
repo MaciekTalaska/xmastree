@@ -72,7 +72,9 @@ class TestCustomProgram(TestBase):
         self.assertEqual(name, json_object['name'])
         self.assertEqual(content, json_object['content'])
 
-suite = unittest.TestLoader().loadTestsFromTestCase(TestStandardProgram)
-unittest.TextTestRunner(verbosity=2).run(suite)
-suite = unittest.TestLoader().loadTestsFromTestCase(TestCustomProgram)
-unittest.TextTestRunner(verbosity=2).run(suite)
+#suite = unittest.TestLoader().loadTestsFromTestCase(TestStandardProgram)
+#unittest.TextTestRunner(verbosity=2).run(suite)
+#suite = unittest.TestLoader().loadTestsFromTestCase(TestCustomProgram)
+#unittest.TextTestRunner(verbosity=2).run(suite)
+if __name__=='__main__':
+    unittest.main()
