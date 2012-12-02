@@ -43,22 +43,6 @@ class Program(object):
         self.name = name
         self.id = id
         self.content = content
-    
-    @property
-    def Author(self):
-        return self.author
-    
-    @property
-    def Name(self):
-        return self.name
-        
-    @property
-    def Id(self):
-        return self.id
-        
-    @property
-    def Content(self):
-        return self.content
         
     def to_json():
         json.dumps(self.__dict__)
@@ -71,15 +55,6 @@ class Program(object):
             content = json_object['content']
             return Program(author, name, id, content)
 
-class JSONHelper():
-    @staticmethod
-    def program_from_json(json_object):
-        if ('program_name' in json_object):
-            pass
-            
-    def is_proper_program(self, program):
-        pass
-    
 class RequestHandlerBase(tornado.web.RequestHandler):
     def set_all_headers(self):
         self.set_header("Content-Type", "application/json")
@@ -170,13 +145,11 @@ def InnerThread():
             time.sleep(5)
             
 def populate_programs():
-    #print("prepopulating programms...")
     global stdprograms
     stdprograms['8c702c94-12c8-4843-adb4-73b4806d1d47'] = Program('Maciek', 'Blinker', '8c702c94-12c8-4843-adb4-73b4806d1d47', 'ala ma kota')
     stdprograms['cd6934bc-4bd5-4f13-994d-bcc386126f74'] = Program('Maciek', 'Blinker v2', 'cd6934bc-4bd5-4f13-994d-bcc386126f74', 'kot ma ale')
 
 if __name__ == "__main__":
-    # initialize
     populate_programs()
     tornado.options.parse_command_line()
     # register main file for changes
