@@ -180,7 +180,7 @@ if __name__ == "__main__":
     tornado.options.parse_command_line()
     # register main file for changes
     tornado.autoreload.watch("xmastree.py")
-    application.listen(8888)
+    application.listen(8808)
     tornado.autoreload.start(io_loop=None,check_time=500)
     lightThread = threading.Thread(target = InnerThread)
     # worker thread is temporarily disabled

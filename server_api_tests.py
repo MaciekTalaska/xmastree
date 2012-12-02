@@ -4,7 +4,7 @@ import uuid
 import json
 
 class TestBase(unittest.TestCase):
-    port = 8888
+    port = 8808
     def create_connection(self):
         return httplib.HTTPConnection("localhost", self.port)
         
