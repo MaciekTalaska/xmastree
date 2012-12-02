@@ -6,5 +6,5 @@ install:
   - pip install tornado
 #  - pip install -r requirements.txt --use-mirrors
 script:
-  - python xmastree.py
+  - python xmastree.py &
   - python -m server_api_tests
