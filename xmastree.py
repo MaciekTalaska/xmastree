@@ -130,7 +130,7 @@ class CustomProgramListerHandler(RequestHandlerBase):
         program = json.loads(strprogram, object_hook=Program.from_json)
         program.__dict__['id']=sid
         programs[sid]= program
-        self.write("{id:"+sid+"}")
+        self.write('{"id":"'+sid+'"}')
 
 class CustomProgramHandler(RequestHandlerBase):
     def get(self,id):  
