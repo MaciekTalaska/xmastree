@@ -21,4 +21,10 @@ How to run?
 -----------
 1. python xmastree.py
 
+
+How to check that it works properly on your machine?
+----------------------------------------------------
+1. Start server: python xmastree.py
+2. Run tests: python -m server_api_tests
+
 [twitter]: https://twitter.com/MaciekTalaska
