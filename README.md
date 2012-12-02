@@ -1,3 +1,8 @@
+**Author** Maciej Talaska. [Follow me on Twitter][twitter]
+
+[![Build Status](https://secure.travis-ci.org/MaciekTalaska/xmastree.png?branch=master)](https://travis-ci.org/MaciekTalaska/xmastree)
+
+
 xmastree 
 ========
 
@@ -15,3 +20,5 @@ easy_install.
 How to run?
 -----------
 1. python xmastree.py
+
+[twitter]: https://twitter.com/MaciekTalaska
