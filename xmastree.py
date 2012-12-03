@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import tornado.ioloop
 import tornado.web
 import tornado.options
@@ -146,8 +147,8 @@ def InnerThread():
             
 def populate_programs():
     global stdprograms
-    stdprograms['8c702c94-12c8-4843-adb4-73b4806d1d47'] = Program('Maciek', 'Blinker', '8c702c94-12c8-4843-adb4-73b4806d1d47', 'ala ma kota')
-    stdprograms['cd6934bc-4bd5-4f13-994d-bcc386126f74'] = Program('Maciek', 'Blinker v2', 'cd6934bc-4bd5-4f13-994d-bcc386126f74', 'kot ma ale')
+    stdprograms['8c702c94-12c8-4843-adb4-73b4806d1d47'] = Program('Maciek', 'Blinker', '8c702c94-12c8-4843-adb4-73b4806d1d47', 'content of the first program')
+    stdprograms['cd6934bc-4bd5-4f13-994d-bcc386126f74'] = Program('Maciek', 'Blinker v2', 'cd6934bc-4bd5-4f13-994d-bcc386126f74', 'content of the second program')
 
 if __name__ == "__main__":
     populate_programs()
