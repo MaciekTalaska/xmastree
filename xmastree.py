@@ -16,6 +16,7 @@ queue = Queue.Queue()
 programs = dict()
 stdprograms = dict()
 portMap = [0,1,4,17,21,22,10,9]
+lightState = [0,0,0,0,0,0,0,0]
 
 class LightController():
     @staticmethod
@@ -29,10 +30,14 @@ class LightController():
     @staticmethod
     def light_on(light):
         GPIO.output(portMap[light], True)
+        global lightState
+        lightState[light] = 1
 
     @staticmethod
     def light_off(light):
         GPIO.output(portMap[light], False)
+        global lightState
+        lightState[light] = 0
 
     @staticmethod
     def change_light(light, state):
@@ -90,9 +95,16 @@ class RequestHandlerBase(tornado.web.RequestHandler):
 class LinesHandler(RequestHandlerBase):
     def put(self, line, state):
         self.set_all_headers()
-        print("lines handler")
-        #LightController.change_light_state(line)
         LightController.change_light(line, state)
+
+class LinesStatusHandler(RequestHandlerBase):
+    def get(self, line):
+        self.set_all_headers()
+        self.write(str(lightState[int(line)]))
+
+    def delete(self,line):
+        for i in range(0,8):
+            LightController.light_off(i)       
 
 class StandardProgramHandlerLister(RequestHandlerBase):
     def get(self):
@@ -155,6 +167,7 @@ class CustomProgramHandler(RequestHandlerBase):
             ProgramLauncher.run(program)
 
 application = tornado.web.Application([
+    (r"/line/([0-7]{1})",LinesStatusHandler),
     (r"/line/([0-7]{1})/([0-1]{1})",LinesHandler),
     (r"/stdprogram",StandardProgramHandlerLister),
     (r"/stdprogram/([0-9A-Fa-f-]*)",StandardProgramHandler),
