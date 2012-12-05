@@ -8,13 +8,40 @@ import time
 import Queue
 import uuid
 import json
-from lightcontroller import *
 import config
+import RPi.GPIO as GPIO
 
 lightThread = None
 queue = Queue.Queue()
 programs = dict()
 stdprograms = dict()
+portMap = [0,1,4,17,21,22,10,9]
+
+class LightController():
+    @staticmethod
+    def turn_all_lights_off():
+        pass
+
+    @staticmethod
+    def change_light_state(light):
+        pass
+
+    @staticmethod
+    def light_on(light):
+        GPIO.output(portMap[light], True)
+
+    @staticmethod
+    def light_off(light):
+        GPIO.output(portMap[light], False)
+
+    @staticmethod
+    def change_light(light, state):
+        light_num = int(light)
+        if (state == "0"):
+            LightController.light_off(light_num)
+        else:
+            LightController.light_on(light_num)
+   
 
 class ProgramLauncher(object):
     def __init__():
@@ -61,9 +88,11 @@ class RequestHandlerBase(tornado.web.RequestHandler):
         self.set_header("Content-Type", "application/json")
 
 class LinesHandler(RequestHandlerBase):
-    def put(self, line):
+    def put(self, line, state):
         self.set_all_headers()
-        LightController.change_light_state(line)
+        print("lines handler")
+        #LightController.change_light_state(line)
+        LightController.change_light(line, state)
 
 class StandardProgramHandlerLister(RequestHandlerBase):
     def get(self):
@@ -126,7 +155,7 @@ class CustomProgramHandler(RequestHandlerBase):
             ProgramLauncher.run(program)
 
 application = tornado.web.Application([
-    (r"/line/([0-7]{1})",LinesHandler),
+    (r"/line/([0-7]{1})/([0-1]{1})",LinesHandler),
     (r"/stdprogram",StandardProgramHandlerLister),
     (r"/stdprogram/([0-9A-Fa-f-]*)",StandardProgramHandler),
     (r"/program",CustomProgramListerHandler),
@@ -150,15 +179,32 @@ def populate_programs():
     stdprograms['8c702c94-12c8-4843-adb4-73b4806d1d47'] = Program('Maciek', 'Blinker', '8c702c94-12c8-4843-adb4-73b4806d1d47', 'content of the first program')
     stdprograms['cd6934bc-4bd5-4f13-994d-bcc386126f74'] = Program('Maciek', 'Blinker v2', 'cd6934bc-4bd5-4f13-994d-bcc386126f74', 'content of the second program')
 
-if __name__ == "__main__":
+def create_worker_thread():
+    global lightThread
+    lightThread = threading.Thread(target = InnerThread)
+    lightThread.daemon = True
+    # worker thread is temporarily disabled
+    #lightThread.start()
+    global queue
+    queue = Queue.Queue()
+
+def initialize_RaspberryPi():
+    GPIO.setwarnings(False)
+    GPIO.setmode(GPIO.BCM)
+    for i in portMap:
+        GPIO.setup(i, GPIO.OUT)
+
+def initialize():
     populate_programs()
+    create_worker_thread()
+    initialize_RaspberryPi()
+
+if __name__ == "__main__":
+    initialize()
     tornado.options.parse_command_line()
     # register main file for changes
     tornado.autoreload.watch("xmastree.py")
     application.listen(config.web_server_port)
     tornado.autoreload.start(io_loop=None,check_time=500)
-    lightThread = threading.Thread(target = InnerThread)
-    # worker thread is temporarily disabled
-    #lightThread.start()
     tornado.ioloop.IOLoop.instance().start()
     #lightThread.join();
