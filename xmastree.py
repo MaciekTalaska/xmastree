@@ -124,12 +124,7 @@ class LinesStatusHandler(RequestHandlerBase):
 
 class TreeStatusHandler(RequestHandlerBase):
     def get(self):
-        msg = str()
-        l = range(0,8)
-        ac = 0
-        for i in l:
-            ac = (ac << 1) | lightState[i]
-        self.write(str(ac))
+        self.write(str(json.dumps(lightState)))
 
 class StandardProgramHandlerLister(RequestHandlerBase):
     def get(self):
