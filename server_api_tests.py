@@ -26,7 +26,86 @@ class TestBase(unittest.TestCase):
         body = response.read()
         response.close()
         return (body,status)
+        
+    def execute_delete(self, resource):
+        conn = self.create_connection()
+        conn.request("DELETE", resource)
+        response = conn.getresponse()
+        status = response.status
+        body = response.read()
+        response.close()
+        return (body,status)
+        
+    def execute_put(self, resource, body=None):
+        conn = self.create_connection()
+        conn.request("PUT", resource, body)
+        response = conn.getresponse()
+        status = response.status
+        body = response.read()
+        response.close()
+        return (body,status)
+        
 
+class TestDirectLightControl(TestBase):
+    def test_after_reset_all_lights_should_be_switched_off(self):
+        resource = "/tree"
+        self.execute_delete(resource)
+        (body, status) = self.execute_get_request(resource)
+        self.assertEqual(200, status)
+        j = json.loads(body)
+        self.assertEqual(8, j.count(0))
+        
+    def test_after_reset_lights_could_be_turned_on(self):
+        resource = "/tree"
+        (body, status) = self.execute_delete(resource)
+        self.assertEqual(200,status)
+        for i in range(0,8):
+            (body, status) = self.execute_put("/line/"+str(i))
+            self.assertEqual(200, status)
+        (body, status) = self.execute_get_request("/tree")
+        self.assertEqual(200, status)
+        j = json.loads(body)
+        self.assertEqual(8, j.count(1))
+            
+    def test_after_reset_lights_could_be_turned_on_2(self):
+        resource = "/tree"
+        (body, status) = self.execute_delete(resource)
+        self.assertEqual(200,status)
+        for i in range(0,8):
+            (body, status) = self.execute_put("/line/"+str(i)+"/1")
+            self.assertEqual(200, status)
+        (body, status) = self.execute_get_request("/tree")
+        self.assertEqual(200, status)
+        j = json.loads(body)
+        self.assertEqual(8, j.count(1))
+        for i in range(0,8):
+            (body, status) = self.execute_put("/line/"+str(i)+"/0")
+            self.assertEqual(200, status)
+        (body, status) = self.execute_get_request("/tree")
+        self.assertEqual(200, status)
+        j = json.loads(body)
+        self.assertEqual(8, j.count(0))
+        
+    def test_toggle(self):
+        resource = "/tree"
+        (body, status) = self.execute_delete(resource)
+        self.assertEqual(200,status)
+        for i in range(0,8):
+            (body, status) = self.execute_put("/line/"+str(i))
+            self.assertEqual(200, status)
+        (body, status) = self.execute_get_request("/tree")
+        self.assertEqual(200, status)
+        j = json.loads(body)
+        self.assertEqual(8, j.count(1))
+        for i in range(0,8):
+            (body, status) = self.execute_put("/line/"+str(i))
+            self.assertEqual(200, status)
+        (body, status) = self.execute_get_request("/tree")
+        self.assertEqual(200, status)
+        j = json.loads(body)
+        self.assertEqual(8, j.count(0))
+        
+    
 
 class TestStandardProgram(TestBase):
     def test_there_should_be_standard_programms(self):

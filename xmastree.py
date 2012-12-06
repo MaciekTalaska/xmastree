@@ -25,7 +25,7 @@ class LightController():
     @staticmethod
     def reset_lights():
         for i in range(0,8):
-            LightController.set_light(i, False)
+            LightController.set_light(i, "0")
 
     @staticmethod
     def light_on(light):
@@ -125,6 +125,9 @@ class LinesStatusHandler(RequestHandlerBase):
 class TreeStatusHandler(RequestHandlerBase):
     def get(self):
         self.write(str(json.dumps(lightState)))
+        
+    def delete(self):
+        LightController.reset_lights()
 
 class StandardProgramHandlerLister(RequestHandlerBase):
     def get(self):
