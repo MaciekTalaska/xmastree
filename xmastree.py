@@ -9,7 +9,10 @@ import Queue
 import uuid
 import json
 import config
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO
+except ImportError:
+    import FakeGPIO as GPIO
 
 lightThread = None
 queue = Queue.Queue()
@@ -20,12 +23,9 @@ lightState = [0,0,0,0,0,0,0,0]
 
 class LightController():
     @staticmethod
-    def turn_all_lights_off():
-        pass
-
-    @staticmethod
-    def change_light_state(light):
-        pass
+    def reset_lights():
+        for i in range(0,8):
+            LightController.set_light(i, False)
 
     @staticmethod
     def light_on(light):
@@ -40,13 +40,27 @@ class LightController():
         lightState[light] = 0
 
     @staticmethod
-    def change_light(light, state):
+    def set_light(light, state):
         light_num = int(light)
         if (state == "0"):
             LightController.light_off(light_num)
         else:
             LightController.light_on(light_num)
+
+    @staticmethod
+    def toggle(light):
+        light_num = int(light)
+        if lightState[light_num] == 0:
+            LightController.light_on(light_num)
+        else:
+            LightController.light_off(light_num)
    
+    @staticmethod
+    def get_tree_state():
+        acc = 0
+        for i in range(0,8):
+            acc = (acc << 1) | lightState[i]
+        return acc
 
 class ProgramLauncher(object):
     def __init__():
@@ -95,7 +109,7 @@ class RequestHandlerBase(tornado.web.RequestHandler):
 class LinesHandler(RequestHandlerBase):
     def put(self, line, state):
         self.set_all_headers()
-        LightController.change_light(line, state)
+        LightController.set_light(line, state)
 
 class LinesStatusHandler(RequestHandlerBase):
     def get(self, line):
@@ -103,8 +117,19 @@ class LinesStatusHandler(RequestHandlerBase):
         self.write(str(lightState[int(line)]))
 
     def delete(self,line):
-        for i in range(0,8):
-            LightController.light_off(i)       
+        LightController.reset_lights()
+    
+    def put(self, line):
+        LightController.toggle(line)
+
+class TreeStatusHandler(RequestHandlerBase):
+    def get(self):
+        msg = str()
+        l = range(0,8)
+        ac = 0
+        for i in l:
+            ac = (ac << 1) | lightState[i]
+        self.write(str(ac))
 
 class StandardProgramHandlerLister(RequestHandlerBase):
     def get(self):
@@ -167,6 +192,7 @@ class CustomProgramHandler(RequestHandlerBase):
             ProgramLauncher.run(program)
 
 application = tornado.web.Application([
+    (r"/tree",TreeStatusHandler),
     (r"/line/([0-7]{1})",LinesStatusHandler),
     (r"/line/([0-7]{1})/([0-1]{1})",LinesHandler),
     (r"/stdprogram",StandardProgramHandlerLister),
