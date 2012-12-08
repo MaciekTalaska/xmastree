@@ -85,22 +85,24 @@ class LightThread(threading.Thread):
         pass
 
 class Program(object):
-    def __init__(self, author, name, id, content):
+    def __init__(self, author, name, id, content, loop_from):
         self.author = author
         self.name = name
         self.id = id
         self.content = content
+        self.loop_from = loop_from
         
     def to_json():
         json.dumps(self.__dict__)
         
     @staticmethod
     def from_json(json_object):
-        if ('author' in json_object) and ('name' in json_object) and ('content' in json_object):
+        if ('author' in json_object) and ('name' in json_object) and ('content' in json_object) and ('loop_from' in json_object):
             author = json_object['author']
             name = json_object['name']
             content = json_object['content']
-            return Program(author, name, id, content)
+            loop_from = json_object['loop_from']
+            return Program(author, name, id, content, loop_from)
 
 class RequestHandlerBase(tornado.web.RequestHandler):
     def set_all_headers(self):
@@ -238,8 +240,8 @@ def InnerThread():
             
 def populate_programs():
     global stdprograms
-    stdprograms['8c702c94-12c8-4843-adb4-73b4806d1d47'] = Program('Maciek', 'Blinker', '8c702c94-12c8-4843-adb4-73b4806d1d47', 'content of the first program')
-    stdprograms['cd6934bc-4bd5-4f13-994d-bcc386126f74'] = Program('Maciek', 'Blinker v2', 'cd6934bc-4bd5-4f13-994d-bcc386126f74', 'content of the second program')
+    stdprograms['8c702c94-12c8-4843-adb4-73b4806d1d47'] = Program('Maciek', 'Blinker', '8c702c94-12c8-4843-adb4-73b4806d1d47', 'content of the first program', '1')
+    stdprograms['cd6934bc-4bd5-4f13-994d-bcc386126f74'] = Program('Maciek', 'Blinker v2', 'cd6934bc-4bd5-4f13-994d-bcc386126f74', 'content of the second program', '1')
 
 def create_worker_thread():
     global lightThread

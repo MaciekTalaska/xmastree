@@ -151,7 +151,8 @@ class TestCustomProgram(TestBase):
         author = "Maciek"
         content = "doesnt really matter"
         name = "a simple name for a test program"
-        request_body = '{"author":"'+author+'","name":"'+name+'","content":"'+content+'"}'
+        loop_from = "1"
+        request_body = '{"author":"'+author+'","name":"'+name+'","content":"'+content+'", "loop_from":'+loop_from+'}'
         response = self.execute_post("/program", request_body)
         body, status = response
         self.assertTrue(len(body)>0)
