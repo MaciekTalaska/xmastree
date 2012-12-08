@@ -187,5 +187,22 @@ class TestProgram(unittest.TestCase):
         self.assertEqual((xmastree.WAIT_INSTRUCTION,300),seq[4])
         self.assertEqual((xmastree.LOOP_INSTRUCTION,0),seq[5])
 
+    def test_proper_program_ending_with_semicolon_should_be_parsed(self):
+        author = "Maciek"
+        name = "proper program"
+        content = "on:1,2,3;wait:300;off:1,2,3;on:4,5,6;wait:300;"
+        loop_from = "0"
+        id = str(uuid.uuid4())
+        program = xmastree.Program(author, name, id, content, loop_from);
+        seq = program.create_sequence()
+        self.assertEqual(6, len(seq))
+        self.assertEqual((xmastree.ON_INSTRUCTION,[1,2,3]),seq[0])
+        self.assertEqual((xmastree.WAIT_INSTRUCTION,300),seq[1])
+        self.assertEqual((xmastree.OFF_INSTRUCTION,[1,2,3]),seq[2])
+        self.assertEqual((xmastree.ON_INSTRUCTION,[4,5,6]),seq[3])
+        self.assertEqual((xmastree.WAIT_INSTRUCTION,300),seq[4])
+        self.assertEqual((xmastree.LOOP_INSTRUCTION,0),seq[5])
+
+
 if __name__=='__main__':
     unittest.main()
