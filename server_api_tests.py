@@ -9,7 +9,7 @@ class TestBase(unittest.TestCase):
     def create_connection(self):
         return httplib.HTTPConnection("localhost", self.port)
         
-    def execute_get_request(self, resource):
+    def execute_get(self, resource):
         conn = self.create_connection()
         conn.request("GET", resource)
         response = conn.getresponse()
@@ -18,7 +18,7 @@ class TestBase(unittest.TestCase):
         response.close()
         return (body,status)
         
-    def execute_post_request(self, resource, body):
+    def execute_post(self, resource, body):
         conn = self.create_connection()
         conn.request("POST", resource, body)
         response = conn.getresponse()
@@ -50,7 +50,7 @@ class TestDirectLightControl(TestBase):
     def test_after_reset_all_lights_should_be_switched_off(self):
         resource = "/tree"
         self.execute_delete(resource)
-        (body, status) = self.execute_get_request(resource)
+        (body, status) = self.execute_get(resource)
         self.assertEqual(200, status)
         j = json.loads(body)
         self.assertEqual(8, j.count(0))
@@ -62,7 +62,7 @@ class TestDirectLightControl(TestBase):
         for i in range(0,8):
             (body, status) = self.execute_put("/line/"+str(i))
             self.assertEqual(200, status)
-        (body, status) = self.execute_get_request("/tree")
+        (body, status) = self.execute_get("/tree")
         self.assertEqual(200, status)
         j = json.loads(body)
         self.assertEqual(8, j.count(1))
@@ -74,14 +74,14 @@ class TestDirectLightControl(TestBase):
         for i in range(0,8):
             (body, status) = self.execute_put("/line/"+str(i)+"/1")
             self.assertEqual(200, status)
-        (body, status) = self.execute_get_request("/tree")
+        (body, status) = self.execute_get("/tree")
         self.assertEqual(200, status)
         j = json.loads(body)
         self.assertEqual(8, j.count(1))
         for i in range(0,8):
             (body, status) = self.execute_put("/line/"+str(i)+"/0")
             self.assertEqual(200, status)
-        (body, status) = self.execute_get_request("/tree")
+        (body, status) = self.execute_get("/tree")
         self.assertEqual(200, status)
         j = json.loads(body)
         self.assertEqual(8, j.count(0))
@@ -93,36 +93,57 @@ class TestDirectLightControl(TestBase):
         for i in range(0,8):
             (body, status) = self.execute_put("/line/"+str(i))
             self.assertEqual(200, status)
-        (body, status) = self.execute_get_request("/tree")
+        (body, status) = self.execute_get("/tree")
         self.assertEqual(200, status)
         j = json.loads(body)
         self.assertEqual(8, j.count(1))
         for i in range(0,8):
             (body, status) = self.execute_put("/line/"+str(i))
             self.assertEqual(200, status)
-        (body, status) = self.execute_get_request("/tree")
+        (body, status) = self.execute_get("/tree")
         self.assertEqual(200, status)
         j = json.loads(body)
         self.assertEqual(8, j.count(0))
         
+    def test_toggle_many(self):
+        resource = "/tree"
+        (body, status) = self.execute_delete(resource)
+        (body, status) = self.execute_put(resource, "[0,1,2,3,4,5,6,7]")
+        self.assertEqual(200, status)
+        (body, status) = self.execute_get(resource)
+        (body, status) = self.execute_get("/tree")
+        self.assertEqual(200, status)
+        j = json.loads(body)
+        self.assertEqual(8, j.count(1))
+        
     
+    def test_switch_on_many(self):
+        resource = "/tree"
+        (body, status) = self.execute_delete(resource)
+        (body, status) = self.execute_post(resource, "[0,1,2,3,4,5,6,7]")
+        self.assertEqual(200, status)
+        (body, status) = self.execute_get(resource)
+        (body, status) = self.execute_get("/tree")
+        self.assertEqual(200, status)
+        j = json.loads(body)
+        self.assertEqual(8, j.count(1))
 
 class TestStandardProgram(TestBase):
     def test_there_should_be_standard_programms(self):
-        response = self.execute_get_request("/stdprogram")
+        response = self.execute_get("/stdprogram")
         status = response[1]
         self.assertEqual(200, status)
     
     def test_asking_for_non_existing_program_should_result_in_404(self):
         sid = str(uuid.uuid4())
-        response = self.execute_get_request("/stdprogram/"+sid)
+        response = self.execute_get("/stdprogram/"+sid)
         status = response[1]
         self.assertEqual(404, status)
     
 class TestCustomProgram(TestBase):
     def test_asking_for_non_existing_program_should_result_in_404(self):
         sid = str(uuid.uuid4())
-        response = self.execute_get_request("/program/"+sid)
+        response = self.execute_get("/program/"+sid)
         status = response[1]
         self.assertEqual(404, status)
 
@@ -131,13 +152,13 @@ class TestCustomProgram(TestBase):
         content = "doesnt really matter"
         name = "a simple name for a test program"
         request_body = '{"author":"'+author+'","name":"'+name+'","content":"'+content+'"}'
-        response = self.execute_post_request("/program", request_body)
+        response = self.execute_post("/program", request_body)
         body, status = response
         self.assertTrue(len(body)>0)
         self.assertEqual(200, status)
         j = json.loads(body)
         sid = j['id']
-        response = self.execute_get_request("/program/"+sid)
+        response = self.execute_get("/program/"+sid)
         response_body, status = response
         self.assertEqual(200, status)
         json_object = json.loads(response_body)

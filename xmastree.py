@@ -128,6 +128,31 @@ class TreeStatusHandler(RequestHandlerBase):
         
     def delete(self):
         LightController.reset_lights()
+        
+    def post(self):
+        body = self.request.body
+        if len(body) < 3:
+            raise tornado.web.HTTPError(400)
+        lights = json.loads(body)
+        if lights is None:
+            raise tornado.web.HTTPError(400)
+        if not isinstance(lights, list):
+            raise tornado.web.HTTPError(400)
+        for i in lights:
+            LightController.light_on(i)
+    
+    def put(self):
+        body = self.request.body
+        if len(body) < 3:
+            raise tornado.web.HTTPError(400)
+        lights = json.loads(self.request.body)
+        if lights is None:
+            raise tornado.web.HTTPError(400)
+        if not isinstance(lights, list):
+            raise tornado.web.HTTPError(400)
+        for i in lights:
+            LightController.toggle(i)            
+        
 
 class StandardProgramHandlerLister(RequestHandlerBase):
     def get(self):
