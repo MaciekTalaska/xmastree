@@ -3,6 +3,7 @@ import httplib
 import uuid
 import json
 import config
+import xmastree
 
 class TestBase(unittest.TestCase):
     port = config.web_server_port
@@ -139,8 +140,12 @@ class TestStandardProgram(TestBase):
         response = self.execute_get("/stdprogram/"+sid)
         status = response[1]
         self.assertEqual(404, status)
-    
+        
 class TestCustomProgram(TestBase):
+    def program_string_from_components(self, author, name, content, loop_from):
+        return '{"author":"'+author+'","name":"'+name+'","content":"'+content+'", "loop_from":'+loop_from+'}'
+        
+    
     def test_asking_for_non_existing_program_should_result_in_404(self):
         sid = str(uuid.uuid4())
         response = self.execute_get("/program/"+sid)
@@ -149,23 +154,38 @@ class TestCustomProgram(TestBase):
 
     def test_when_program_is_created_it_could_be_retrieved(self):
         author = "Maciek"
-        content = "doesnt really matter"
+        content = "on:1,2,3;wait:300;off:1,2,3;on:4,5,6;wait:300"
         name = "a simple name for a test program"
         loop_from = "1"
-        request_body = '{"author":"'+author+'","name":"'+name+'","content":"'+content+'", "loop_from":'+loop_from+'}'
-        response = self.execute_post("/program", request_body)
-        body, status = response
+        request_body = self.program_string_from_components(author, name, content, loop_from)
+        (body, status) = self.execute_post("/program", request_body)
         self.assertTrue(len(body)>0)
         self.assertEqual(200, status)
         j = json.loads(body)
         sid = j['id']
-        response = self.execute_get("/program/"+sid)
-        response_body, status = response
+        (response_body, status)= self.execute_get("/program/"+sid)
         self.assertEqual(200, status)
         json_object = json.loads(response_body)
         self.assertEqual(author, json_object['author'])
         self.assertEqual(name, json_object['name'])
         self.assertEqual(content, json_object['content'])
+        
+class TestProgram(unittest.TestCase):
+    def test_proper_program_should_be_parsed(self):
+        author = "Maciek"
+        name = "proper program"
+        content = "on:1,2,3;wait:300;off:1,2,3;on:4,5,6;wait:300"
+        loop_from = "0"
+        id = str(uuid.uuid4())
+        program = xmastree.Program(author, name, id, content, loop_from);
+        seq = program.create_sequence()
+        self.assertEqual(6, len(seq))
+        self.assertEqual((xmastree.ON_INSTRUCTION,[1,2,3]),seq[0])
+        self.assertEqual((xmastree.WAIT_INSTRUCTION,300),seq[1])
+        self.assertEqual((xmastree.OFF_INSTRUCTION,[1,2,3]),seq[2])
+        self.assertEqual((xmastree.ON_INSTRUCTION,[4,5,6]),seq[3])
+        self.assertEqual((xmastree.WAIT_INSTRUCTION,300),seq[4])
+        self.assertEqual((xmastree.LOOP_INSTRUCTION,0),seq[5])
 
 if __name__=='__main__':
     unittest.main()

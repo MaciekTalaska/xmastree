@@ -20,6 +20,11 @@ programs = dict()
 stdprograms = dict()
 portMap = [0,1,4,17,21,22,10,9]
 lightState = [0,0,0,0,0,0,0,0]
+sequences = dict()
+WAIT_INSTRUCTION    = 0
+ON_INSTRUCTION      = 1
+OFF_INSTRUCTION     = 2
+LOOP_INSTRUCTION    = 3
 
 class LightController():
     @staticmethod
@@ -103,6 +108,24 @@ class Program(object):
             content = json_object['content']
             loop_from = json_object['loop_from']
             return Program(author, name, id, content, loop_from)
+            
+    def create_sequence(self):
+        seq = list()
+        operations = self.content.split(';')
+        for op in operations:
+            pcs = op.split(':')
+            operation = pcs[0]
+            value = pcs[1]
+            if operation == 'on' or operation == 'off':
+                value = "["+value+"]"
+                instruction = ON_INSTRUCTION if len(operation)==2 else OFF_INSTRUCTION
+                lights = json.loads(value)
+                seq.append((instruction,lights))
+            if operation == 'wait':
+                waittime = int(value)
+                seq.append((WAIT_INSTRUCTION,waittime))
+        seq.append((LOOP_INSTRUCTION,int(self.loop_from)))
+        return seq
 
 class RequestHandlerBase(tornado.web.RequestHandler):
     def set_all_headers(self):
@@ -198,6 +221,9 @@ class CustomProgramListerHandler(RequestHandlerBase):
         program = json.loads(strprogram, object_hook=Program.from_json)
         program.__dict__['id']=sid
         programs[sid]= program
+        seq = program.create_sequence()
+        global sequences
+        sequences[sid] = seq
         self.write('{"id":"'+sid+'"}')
 
 class CustomProgramHandler(RequestHandlerBase):
