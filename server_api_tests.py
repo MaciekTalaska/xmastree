@@ -10,6 +10,12 @@ class TestBase(unittest.TestCase):
     def create_connection(self):
         return httplib.HTTPConnection("localhost", self.port)
         
+    def check_content_type(self, response):
+        status = response.status
+        if status == 200:
+            content_type = response.getheader("Content-Type")
+            self.assertEqual("application/json", content_type)            
+        
     def execute_get(self, resource):
         conn = self.create_connection()
         conn.request("GET", resource)
@@ -17,6 +23,7 @@ class TestBase(unittest.TestCase):
         status = response.status
         body = response.read()
         response.close()
+        self.check_content_type(response)
         return (body,status)
         
     def execute_post(self, resource, body):
@@ -26,6 +33,7 @@ class TestBase(unittest.TestCase):
         status = response.status
         body = response.read()
         response.close()
+        self.check_content_type(response)
         return (body,status)
         
     def execute_delete(self, resource):
@@ -35,6 +43,7 @@ class TestBase(unittest.TestCase):
         status = response.status
         body = response.read()
         response.close()
+        self.check_content_type(response)
         return (body,status)
         
     def execute_put(self, resource, body=None):
@@ -44,6 +53,7 @@ class TestBase(unittest.TestCase):
         status = response.status
         body = response.read()
         response.close()
+        self.check_content_type(response)
         return (body,status)
         
 

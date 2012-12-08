@@ -169,16 +169,20 @@ class LinesStatusHandler(RequestHandlerBase):
 
     def delete(self,line):
         LightController.reset_lights()
+        self.set_all_headers()
     
     def put(self, line):
         LightController.toggle(line)
+        self.set_all_headers()
 
 class TreeStatusHandler(RequestHandlerBase):
     def get(self):
+        self.set_all_headers()
         self.write(str(json.dumps(lightState)))
         
     def delete(self):
         LightController.reset_lights()
+        self.set_all_headers()
         
     def post(self):
         body = self.request.body
@@ -191,6 +195,7 @@ class TreeStatusHandler(RequestHandlerBase):
             raise tornado.web.HTTPError(400)
         for i in lights:
             LightController.light_on(i)
+        self.set_all_headers()
     
     def put(self):
         body = self.request.body
@@ -202,7 +207,8 @@ class TreeStatusHandler(RequestHandlerBase):
         if not isinstance(lights, list):
             raise tornado.web.HTTPError(400)
         for i in lights:
-            LightController.toggle(i)            
+            LightController.toggle(i)
+        self.set_all_headers()
         
 
 class StandardProgramHandlerLister(RequestHandlerBase):
@@ -250,6 +256,7 @@ class CustomProgramListerHandler(RequestHandlerBase):
         seq = program.create_sequence()
         global sequences
         sequences[sid] = seq
+        self.set_all_headers()
         self.write('{"id":"'+sid+'"}')
 
 class CustomProgramHandler(RequestHandlerBase):
