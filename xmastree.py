@@ -35,13 +35,11 @@ class LightController():
     @staticmethod
     def light_on(light):
         GPIO.output(portMap[light], True)
-        global lightState
         lightState[light] = 1
 
     @staticmethod
     def light_off(light):
         GPIO.output(portMap[light], False)
-        global lightState
         lightState[light] = 0
 
     @staticmethod
@@ -248,13 +246,11 @@ class CustomProgramListerHandler(RequestHandlerBase):
 
     def post(self):
         sid = str(uuid.uuid1())
-        global programs
         strprogram = self.request.body
         program = json.loads(strprogram, object_hook=Program.from_json)
         program.__dict__['id']=sid
         programs[sid]= program
         seq = program.create_sequence()
-        global sequences
         sequences[sid] = seq
         self.set_all_headers()
         self.write('{"id":"'+sid+'"}')
@@ -297,7 +293,6 @@ def InnerThread():
             print("queue is empty")
         else:
             print("queue populated!")
-            global queue
             item = queue.get(block=True)
             print("current item: " + str(item))
             processing = True
@@ -305,7 +300,6 @@ def InnerThread():
             time.sleep(1)
             
 def populate_programs():
-    global stdprograms
     sid1 = '8c702c94-12c8-4843-adb4-73b4806d1d47'
     sid2 = 'cd6934bc-4bd5-4f13-994d-bcc386126f74'
     content1 = "off:0,1,2,3,4,5,6,7;wait:500;on:1;wait:500;off:1;on:2;wait:500;off:2;on:3;wait:500;off:3;on:4;wait:500;off:4;on:5;wait:500;off:5;on:6;wait:500;off:6;on:7;wait:500;"
@@ -316,7 +310,6 @@ def populate_programs():
     program2 = Program('Maciek', 'Blinker v2', 'cd6934bc-4bd5-4f13-994d-bcc386126f74', content2, loop2)
     stdprograms[sid1] = program1
     stdprograms[sid2] = program2
-    global sequences
     sequences[sid1] = program1.create_sequence()
     sequences[sid2] = program2.create_sequence()
 
@@ -326,8 +319,6 @@ def create_worker_thread():
     lightThread.daemon = True
     # worker thread is temporarily disabled
     #lightThread.start()
-    global queue
-    queue = Queue.Queue()
 
 def initialize_RaspberryPi():
     GPIO.setwarnings(False)
