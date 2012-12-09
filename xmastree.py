@@ -59,13 +59,6 @@ class LightController():
         else:
             LightController.light_off(light_num)
    
-    @staticmethod
-    def get_tree_state():
-        acc = 0
-        for i in range(0,8):
-            acc = (acc << 1) | lightState[i]
-        return acc
-
 class ProgramLauncher(object):
     def __init__(self, sid):
         self.sid = sid
@@ -76,7 +69,6 @@ class ProgramLauncher(object):
         while True:
             instruction = self.sequence[self.index]
             self.index+=1
-            #self.execute_instruction(instruction)
             (operation, value) = instruction
             if operation == ON_INSTRUCTION:
                 for i in value:
@@ -112,13 +104,6 @@ class XmasJSONEncoder(json.JSONEncoder):
         if isinstance(obj, Program):
             return obj.__dict__
         return json.JSONEncoder().default(obj)
-
-class LightThread(threading.Thread):
-    def __init__(self, threadId, name, counter):
-        pass
-    
-    def run(self):
-        pass
 
 class Program(object):
     def __init__(self, author, name, id, content, loop_from):
@@ -229,8 +214,8 @@ class TreeStatusHandler(RequestHandlerBase):
 class StandardProgramHandlerLister(RequestHandlerBase):
     def get(self):
         if len(stdprograms) > 0:
-            body = json.dumps(stdprograms.values(), cls=XmasJSONEncoder)
             self.set_all_headers()
+            body = json.dumps(stdprograms.values(), cls=XmasJSONEncoder)
             self.write(body)
             ProgramLauncher.stop_program()
         else:
@@ -244,7 +229,6 @@ class StandardProgramHandler(RequestHandlerBase):
         else:
             self.set_all_headers()
             self.write(XmasJSONEncoder().encode(program))
-            self.write(str(sequences.get(id)))
             ProgramLauncher.stop_program()
         
     def put(self, id):
@@ -314,7 +298,6 @@ def InnerThread():
                 sleeptime = launcher.execute()
                 time.sleep(sleeptime/1000)
             #time.sleep(1)
-            #print("queue is empty")
         else:
             print("queue populated!")
             item = queue.get(block=True)
@@ -345,7 +328,6 @@ def create_worker_thread():
     global lightThread
     lightThread = threading.Thread(target = InnerThread)
     lightThread.daemon = True
-    # worker thread is temporarily disabled
     lightThread.start()
 
 def initialize_RaspberryPi():
