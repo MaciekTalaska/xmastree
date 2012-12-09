@@ -92,7 +92,7 @@ class ProgramLauncher(object):
                     next_operation, next_value = next_instruction
                     if next_operation == LOOP_INSTRUCTION:
                         print("exeuting - wait & loop: " + str(value))
-                        self.index = 0
+                        self.index = next_value
                     return value
                 else:
                     self.index = 0
@@ -311,8 +311,9 @@ def InnerThread():
         if (queue.empty()):
             if True == processing:
                 print("processing...")
-                launcher.execute()
-            time.sleep(1)
+                sleeptime = launcher.execute()
+                time.sleep(sleeptime/1000)
+            #time.sleep(1)
             #print("queue is empty")
         else:
             print("queue populated!")
@@ -329,8 +330,8 @@ def InnerThread():
 def populate_programs():
     sid1 = '8c702c94-12c8-4843-adb4-73b4806d1d47'
     sid2 = 'cd6934bc-4bd5-4f13-994d-bcc386126f74'
-    content1 = "off:0,1,2,3,4,5,6,7;wait:500;on:1;wait:500;off:1;on:2;wait:500;off:2;on:3;wait:500;off:3;on:4;wait:500;off:4;on:5;wait:500;off:5;on:6;wait:500;off:6;on:7;wait:500;"
-    content2 = "off:0,1,2,3,4,5,6,7;wait:500;on:0,7;wait:500;off:0,7;on:1,6;wait:500;off:1,6;on:2,5;wait:500;off:2,5;on:3,4;wait:500;"
+    content1 = "off:0,1,2,3,4,5,6,7;wait:1000;on:1;wait:1000;off:1;on:2;wait:1000;off:2;on:3;wait:1000;off:3;on:4;wait:1000;off:4;on:5;wait:1000;off:5;on:6;wait:1000;off:6;on:7;wait:1000;"
+    content2 = "off:0,1,2,3,4,5,6,7;wait:1000;on:0,7;wait:1000;off:0,7;on:1,6;wait:1000;off:1,6;on:2,5;wait:1000;off:2,5;on:3,4;wait:1000;"
     loop1 = "1"
     loop2 = "0"
     program1 = Program('Maciek', 'Blinker', '8c702c94-12c8-4843-adb4-73b4806d1d47', content1, loop1)
