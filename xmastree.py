@@ -15,17 +15,17 @@ except ImportError:
     import FakeGPIO as GPIO
 
 lightThread = None
-queue = Queue.Queue()
 programs = dict()
 stdprograms = dict()
 portMap = [0,1,4,17,21,22,10,9]
 lightState = [0,0,0,0,0,0,0,0]
 sequences = dict()
-WAIT_INSTRUCTION    = 0
-ON_INSTRUCTION      = 1
-OFF_INSTRUCTION     = 2
-LOOP_INSTRUCTION    = 3
-STOP_MARKER         = '-'
+WAIT_INSTRUCTION    = '0'
+ON_INSTRUCTION      = '1'
+OFF_INSTRUCTION     = '2'
+LOOP_INSTRUCTION    = '3'
+STOP_MARKER         = '9'
+current_operation   = '9'
 
 class LightController():
     @staticmethod
@@ -92,18 +92,14 @@ class ProgramLauncher(object):
         
     @staticmethod
     def run(id):
-        queue.put(id)
+        global current_operation
+        current_operation = id
         
     @staticmethod
     def stop_program():
-        if queue.empty():
-            queue.put(STOP_MARKER)
-        else:
-            item = None            
-            while not queue.empty():
-                item = queue.get(block=True)
-            queue.put(item)
-        
+        global current_operation
+        current_operation = STOP_MARKER
+
 
 class XmasJSONEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -295,26 +291,20 @@ application = tornado.web.Application([
 ])
 
 def InnerThread():
-    processing = False
     launcher = None
     while True:
-        if (queue.empty()):
-            if True == processing:
-                print("processing...")
+        if current_operation == STOP_MARKER:
+            time.sleep(1)
+        else:
+            if launcher == None:
+                #print('creating launcher with id: '+str(current_operation))
+                launcher = ProgramLauncher(current_operation)
+                time.sleep(1)
+            else:
+                #print('executing launcher id: ' +str(current_operation))
                 sleeptime = launcher.execute()
                 time.sleep(sleeptime/1000)
-            #time.sleep(1)
-        else:
-            print("queue populated!")
-            item = queue.get(block=True)
-            print("current item: " + str(item))
-            if item == STOP_MARKER:
-                processing = False
-                launcher = None
-            else:
-                processing = True
-                launcher = ProgramLauncher(item)
-            time.sleep(1)
+
             
 def populate_programs():
     sid1 = '8c702c94-12c8-4843-adb4-73b4806d1d47'
