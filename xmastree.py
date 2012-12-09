@@ -96,7 +96,13 @@ class ProgramLauncher(object):
         
     @staticmethod
     def stop_program():
-        queue.put(STOP_MARKER)
+        if queue.empty():
+            queue.put(STOP_MARKER)
+        else:
+            item = None            
+            while not queue.empty():
+                item = queue.get(block=True)
+            queue.put(item)
         
 
 class XmasJSONEncoder(json.JSONEncoder):
