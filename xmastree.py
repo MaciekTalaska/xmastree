@@ -292,13 +292,15 @@ application = tornado.web.Application([
 
 def InnerThread():
     launcher = None
+    last_operation = None
     while True:
         if current_operation == STOP_MARKER:
             time.sleep(1)
         else:
-            if launcher == None:
+            if launcher == None or (last_operation != current_operation):
                 #print('creating launcher with id: '+str(current_operation))
                 launcher = ProgramLauncher(current_operation)
+                last_operation = current_operation
                 time.sleep(1)
             else:
                 #print('executing launcher id: ' +str(current_operation))
