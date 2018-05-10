@@ -4,7 +4,7 @@ python:
   - "2.7"
 # installing dependencies:
 install:
-  - pip install tornado
+  - pip install -Iv tornado==2.4.1
 #  - pip install -r requirements.txt --use-mirrors
 before_script:
   - python xmastree.py &
