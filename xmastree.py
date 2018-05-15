@@ -344,6 +344,6 @@ if __name__ == "__main__":
     # register main file for changes
     tornado.autoreload.watch("xmastree.py")
     application.listen(config.web_server_port)
-    tornado.autoreload.start(io_loop=None,check_time=500)
+    tornado.autoreload.start(check_time=500)
     tornado.ioloop.IOLoop.instance().start()
     #lightThread.join();
