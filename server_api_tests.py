@@ -1,5 +1,5 @@
 import unittest
-import httplib
+import http.client
 import uuid
 import json
 import config
@@ -8,7 +8,7 @@ import xmastree
 class TestBase(unittest.TestCase):
     port = config.web_server_port
     def create_connection(self):
-        return httplib.HTTPConnection("localhost", self.port)
+        return http.client.HTTPConnection("localhost", self.port)
         
     def check_content_type(self, response):
         status = response.status
@@ -23,6 +23,7 @@ class TestBase(unittest.TestCase):
         status = response.status
         body = response.read()
         response.close()
+        conn.close()
         self.check_content_type(response)
         return (body,status)
         
@@ -33,6 +34,7 @@ class TestBase(unittest.TestCase):
         status = response.status
         body = response.read()
         response.close()
+        conn.close()
         self.check_content_type(response)
         return (body,status)
         
@@ -43,6 +45,7 @@ class TestBase(unittest.TestCase):
         status = response.status
         body = response.read()
         response.close()
+        conn.close()
         self.check_content_type(response)
         return (body,status)
         
@@ -53,6 +56,7 @@ class TestBase(unittest.TestCase):
         status = response.status
         body = response.read()
         response.close()
+        conn.close()
         self.check_content_type(response)
         return (body,status)
         
@@ -63,7 +67,7 @@ class TestDirectLightControl(TestBase):
         self.execute_delete(resource)
         (body, status) = self.execute_get(resource)
         self.assertEqual(200, status)
-        j = json.loads(body)
+        j = json.loads(body.decode("utf-8"))
         self.assertEqual(8, j.count(0))
         
     def test_after_reset_lights_could_be_turned_on(self):
@@ -75,7 +79,7 @@ class TestDirectLightControl(TestBase):
             self.assertEqual(200, status)
         (body, status) = self.execute_get("/tree")
         self.assertEqual(200, status)
-        j = json.loads(body)
+        j = json.loads(body.decode("utf-8"))
         self.assertEqual(8, j.count(1))
             
     def test_after_reset_lights_could_be_turned_on_2(self):
@@ -87,14 +91,14 @@ class TestDirectLightControl(TestBase):
             self.assertEqual(200, status)
         (body, status) = self.execute_get("/tree")
         self.assertEqual(200, status)
-        j = json.loads(body)
+        j = json.loads(body.decode("utf-8"))
         self.assertEqual(8, j.count(1))
         for i in range(0,8):
             (body, status) = self.execute_put("/line/"+str(i)+"/0")
             self.assertEqual(200, status)
         (body, status) = self.execute_get("/tree")
         self.assertEqual(200, status)
-        j = json.loads(body)
+        j = json.loads(body.decode("utf-8"))
         self.assertEqual(8, j.count(0))
         
     def test_toggle(self):
@@ -106,14 +110,14 @@ class TestDirectLightControl(TestBase):
             self.assertEqual(200, status)
         (body, status) = self.execute_get("/tree")
         self.assertEqual(200, status)
-        j = json.loads(body)
+        j = json.loads(body.decode("utf-8"))
         self.assertEqual(8, j.count(1))
         for i in range(0,8):
             (body, status) = self.execute_put("/line/"+str(i))
             self.assertEqual(200, status)
         (body, status) = self.execute_get("/tree")
         self.assertEqual(200, status)
-        j = json.loads(body)
+        j = json.loads(body.decode("utf-8"))
         self.assertEqual(8, j.count(0))
         
     def test_toggle_many(self):
@@ -124,7 +128,7 @@ class TestDirectLightControl(TestBase):
         (body, status) = self.execute_get(resource)
         (body, status) = self.execute_get("/tree")
         self.assertEqual(200, status)
-        j = json.loads(body)
+        j = json.loads(body.decode("utf-8"))
         self.assertEqual(8, j.count(1))
         
     
@@ -136,14 +140,14 @@ class TestDirectLightControl(TestBase):
         (body, status) = self.execute_get(resource)
         (body, status) = self.execute_get("/tree")
         self.assertEqual(200, status)
-        j = json.loads(body)
+        j = json.loads(body.decode("utf-8"))
         self.assertEqual(8, j.count(1))
 
 class TestStandardProgram(TestBase):
     def test_there_should_be_standard_programms(self):
         response = self.execute_get("/stdprogram")
         status = response[1]
-        self.assertEqual(200, status)
+        self.assertEqual(200, status)        
     
     def test_asking_for_non_existing_program_should_result_in_404(self):
         sid = str(uuid.uuid4())
@@ -171,11 +175,11 @@ class TestCustomProgram(TestBase):
         (body, status) = self.execute_post("/program", request_body)
         self.assertTrue(len(body)>0)
         self.assertEqual(200, status)
-        j = json.loads(body)
+        j = json.loads(body.decode("utf-8"))
         sid = j['id']
         (response_body, status)= self.execute_get("/program/"+sid)
         self.assertEqual(200, status)
-        json_object = json.loads(response_body)
+        json_object = json.loads(response_body.decode("utf-8"))
         self.assertEqual(author, json_object['author'])
         self.assertEqual(name, json_object['name'])
         self.assertEqual(content, json_object['content'])

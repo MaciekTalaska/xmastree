@@ -5,7 +5,7 @@ import tornado.options
 import tornado.autoreload
 import threading
 import time
-import Queue
+import queue
 import uuid
 import json
 import config
@@ -73,17 +73,17 @@ class ProgramLauncher(object):
             if operation == ON_INSTRUCTION:
                 for i in value:
                     LightController.light_on(i)
-                print("executing - on" + str(value))
+                print(("executing - on" + str(value)))
             if operation == OFF_INSTRUCTION:
                 for i in value:
                     LightController.light_off(i)
-                print("executing - off" + str(value))
+                print(("executing - off" + str(value)))
             if operation == WAIT_INSTRUCTION:
                 if self.index < len(self.sequence):
                     next_instruction = self.sequence[self.index]
                     next_operation, next_value = next_instruction
                     if next_operation == LOOP_INSTRUCTION:
-                        print("exeuting - wait & loop: " + str(value))
+                        print(("exeuting - wait & loop: " + str(value)))
                         self.index = next_value
                     return value
                 else:
@@ -188,7 +188,7 @@ class TreeStatusHandler(RequestHandlerBase):
         body = self.request.body
         if len(body) < 3:
             raise tornado.web.HTTPError(400)
-        lights = json.loads(body)
+        lights = json.loads(body.decode("utf-8"))
         if lights is None:
             raise tornado.web.HTTPError(400)
         if not isinstance(lights, list):
@@ -202,7 +202,7 @@ class TreeStatusHandler(RequestHandlerBase):
         body = self.request.body
         if len(body) < 3:
             raise tornado.web.HTTPError(400)
-        lights = json.loads(self.request.body)
+        lights = json.loads(self.request.body.decode("utf-8"))
         if lights is None:
             raise tornado.web.HTTPError(400)
         if not isinstance(lights, list):
@@ -217,7 +217,7 @@ class StandardProgramHandlerLister(RequestHandlerBase):
     def get(self):
         if len(stdprograms) > 0:
             self.set_all_headers()
-            body = json.dumps(stdprograms.values(), cls=XmasJSONEncoder)
+            body = json.dumps(list(stdprograms.values()), cls=XmasJSONEncoder)
             self.write(body)
             ProgramLauncher.stop_program()
         else:
@@ -244,7 +244,7 @@ class StandardProgramHandler(RequestHandlerBase):
 class CustomProgramListerHandler(RequestHandlerBase):
     def get(self):
         if len(programs) > 0:
-            body = json.dumps(programs.values(), cls=XmasJSONEncoder)
+            body = json.dumps(list(programs.values()), cls=XmasJSONEncoder)
             self.set_all_headers()
             self.write(body)
         else:
@@ -254,7 +254,7 @@ class CustomProgramListerHandler(RequestHandlerBase):
     def post(self):
         sid = str(uuid.uuid1())
         strprogram = self.request.body
-        program = json.loads(strprogram, object_hook=Program.from_json)
+        program = json.loads(strprogram.decode("utf-8"), object_hook=Program.from_json)
         program.__dict__['id']=sid
         programs[sid]= program
         seq = program.create_sequence()
