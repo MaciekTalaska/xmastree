@@ -1,5 +1,8 @@
 import unittest
-import http.client
+try: 
+    import http.client as httpclient
+except ImportError:
+    import httplib as httpclient
 import uuid
 import json
 import config
@@ -8,7 +11,7 @@ import xmastree
 class TestBase(unittest.TestCase):
     port = config.web_server_port
     def create_connection(self):
-        return http.client.HTTPConnection("localhost", self.port)
+        return httpclient.HTTPConnection("localhost", self.port)
         
     def check_content_type(self, response):
         status = response.status
