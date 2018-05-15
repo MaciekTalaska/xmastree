@@ -5,7 +5,6 @@ import tornado.options
 import tornado.autoreload
 import threading
 import time
-import queue
 import uuid
 import json
 import config
