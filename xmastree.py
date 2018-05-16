@@ -303,7 +303,7 @@ application = tornado.web.Application([
 ])
 
 
-def InnerThread():
+def inner_thread():
     launcher = None
     last_operation = None
     while True:
@@ -324,12 +324,23 @@ def InnerThread():
 def populate_programs():
     sid1 = '8c702c94-12c8-4843-adb4-73b4806d1d47'
     sid2 = 'cd6934bc-4bd5-4f13-994d-bcc386126f74'
-    content1 = "off:0,1,2,3,4,5,6,7;wait:1000;on:1;wait:1000;off:1;on:2;wait:1000;off:2;on:3;wait:1000;off:3;on:4;wait:1000;off:4;on:5;wait:1000;off:5;on:6;wait:1000;off:6;on:7;wait:1000;"
-    content2 = 'off:0,1,2,3,4,5,6,7;wait:1000;on:0,7;wait:1000;off:0,7;on:1,6;wait:1000;off:1,6;on:2,5;wait:1000;off:2,5;on:3,4;wait:1000;'
+    content1 = "off:0,1,2,3,4,5,6,7;wait:1000;" \
+               "on:1;wait:1000;" \
+               "off:1;on:2;wait:1000;" \
+               "off:2;on:3;wait:1000;" \
+               "off:3;on:4;wait:1000;" \
+               "off:4;on:5;wait:1000;" \
+               "off:5;on:6;wait:1000;" \
+               "off:6;on:7;wait:1000;"
+    content2 = 'off:0,1,2,3,4,5,6,7;wait:1000;' \
+               'on:0,7;wait:1000;' \
+               'off:0,7;on:1,6;wait:1000;' \
+               'off:1,6;on:2,5;wait:1000;' \
+               'off:2,5;on:3,4;wait:1000;'
     loop1 = "1"
     loop2 = "0"
-    program1 = Program('Maciek', 'Blinker', '8c702c94-12c8-4843-adb4-73b4806d1d47', content1, loop1)
-    program2 = Program('Maciek', 'Blinker v2', 'cd6934bc-4bd5-4f13-994d-bcc386126f74', content2, loop2)
+    program1 = Program('author1', 'Blinker', '8c702c94-12c8-4843-adb4-73b4806d1d47', content1, loop1)
+    program2 = Program('author2', 'Blinker v2', 'cd6934bc-4bd5-4f13-994d-bcc386126f74', content2, loop2)
     stdprograms[sid1] = program1
     stdprograms[sid2] = program2
     sequences[sid1] = program1.create_sequence()
@@ -338,7 +349,7 @@ def populate_programs():
 
 def create_worker_thread():
     global lightThread
-    lightThread = threading.Thread(target=InnerThread)
+    lightThread = threading.Thread(target=inner_thread)
     lightThread.daemon = True
     lightThread.start()
 
