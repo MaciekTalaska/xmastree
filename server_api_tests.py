@@ -26,49 +26,28 @@ class TestBase(unittest.TestCase):
             content_type = response.getheader("Content-Type")
             self.assertEqual("application/json", content_type)
 
-    def execute_get(self, resource):
+    def execute(self, method, resource, body=None):
         conn = self.create_connection()
-        conn.request("GET", resource)
+        conn.request(method, resource, body)
         response = conn.getresponse()
         status = response.status
         body = response.read()
         response.close()
         conn.close()
         self.check_content_type(response)
-        return (body, status)
+        return body, status
+
+    def execute_get(self, resource):
+        return self.execute("GET", resource)
 
     def execute_post(self, resource, body):
-        conn = self.create_connection()
-        conn.request("POST", resource, body)
-        response = conn.getresponse()
-        status = response.status
-        body = response.read()
-        response.close()
-        conn.close()
-        self.check_content_type(response)
-        return (body, status)
+        return self.execute("POST", resource, body)
 
     def execute_delete(self, resource):
-        conn = self.create_connection()
-        conn.request("DELETE", resource)
-        response = conn.getresponse()
-        status = response.status
-        body = response.read()
-        response.close()
-        conn.close()
-        self.check_content_type(response)
-        return (body, status)
+        return self.execute("DELETE", resource)
 
     def execute_put(self, resource, body=None):
-        conn = self.create_connection()
-        conn.request("PUT", resource, body)
-        response = conn.getresponse()
-        status = response.status
-        body = response.read()
-        response.close()
-        conn.close()
-        self.check_content_type(response)
-        return (body, status)
+        return self.execute("PUT", resource, body)
 
 
 class TestDirectLightControl(TestBase):
